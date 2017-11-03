@@ -5,6 +5,16 @@
 
 ```go
 func main() {
-	server.Main()
+	conf := config.Load()
+	initializeLoggingLevel(conf)
+	initializeProfilingService(conf)
+	grpcServer := initializeGrpcServer(conf)
+	initializeLocalMsp(conf)
+	signer := localmsp.NewSigner()
+	manager := initializeMultiChainManager(conf, signer)
+	server := NewServer(manager, signer)
+	ab.RegisterAtomicBroadcastServer(grpcServer.Server(), server)
+	logger.Info("Beginning to serve requests")
+	grpcServer.Start()
 }
 ```
